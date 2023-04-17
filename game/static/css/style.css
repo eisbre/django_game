@@ -1,0 +1,21 @@
+* {
+    margin: 0;
+}
+
+.game{
+    width: 100vw;
+    height: 100vh;
+}
+
+.game-playground{
+    width: 100vw;
+    height: 100vh;
+    background-color: grey;
+}
+
+.game-playground>canvas {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

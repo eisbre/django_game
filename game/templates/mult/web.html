@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %} <!--引入static关键字用于下面的索引，Django的功能-->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/game.css' %}">
+    <script src="https://cdn.acwing.com/static/jquery/js/jquery-3.3.1.min.js"></script>
+    <script src="{% static 'js/dist/game.js' %}"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="game">
+    </div>
+
+    <script type="module">
+        $(document).ready(function () {
+            let game = new Game("game"); //这里传入前面定义的div的id，用于js将内容渲染到对应div内
+        });
+    </script>
+</body>
+
+</html>
