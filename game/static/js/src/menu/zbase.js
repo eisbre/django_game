@@ -11,7 +11,7 @@ class GameMenu {
                     <br>
 
                     <div class="game-menu-field-item game-menu-field-item-multi-mode">
-                        多人模式
+                        多人模式(待开发)
                     </div>
 
                     <br>
