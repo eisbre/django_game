@@ -111,39 +111,41 @@ class Player extends GameObject {
 
         this.playground.game_map.$canvas.keydown(function (e) {
             console.log(e.which);
-            //远程技能
-            if (e.which === 87) {//触发技能
-                if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
-                    return false;
+            if (outer.playground.map_id === 1) {
+                //远程技能
+                if (e.which === 87) {//触发技能
+                    if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
+                        return false;
+                    }
+                    outer.shoot_long();
                 }
-                outer.shoot_long();
-            }
-            if (e.which === 81) {
-                outer.skill_long_num += 1;
-            }
-            else if (e.which === 69) {
-                outer.skill_long_num -= 1;
-                outer.skill_long_num = Math.abs(outer.skill_long_num);
-            }
-            outer.skill_long_num %= skill_list_long["len"];
-            outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
+                if (e.which === 81) {
+                    outer.skill_long_num += 1;
+                }
+                else if (e.which === 69) {
+                    outer.skill_long_num -= 1;
+                    outer.skill_long_num = Math.abs(outer.skill_long_num);
+                }
+                outer.skill_long_num %= skill_list_long["len"];
+                outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
 
-            //近程技能
-            if (e.which === 83) {//触发技能
-                if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
-                    return false;
+                //近程技能
+                if (e.which === 83) {//触发技能
+                    if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
+                        return false;
+                    }
+                    outer.shoot_short();
                 }
-                outer.shoot_short();
+                if (e.which === 65) {
+                    outer.skill_short_num += 1;
+                }
+                else if (e.which === 68) {
+                    outer.skill_short_num -= 1;
+                    outer.skill_short_num = Math.abs(outer.skill_short_num);
+                }
+                outer.skill_short_num %= skill_list_short["len"];
+                outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
             }
-            if (e.which === 65) {
-                outer.skill_short_num += 1;
-            }
-            else if (e.which === 68) {
-                outer.skill_short_num -= 1;
-                outer.skill_short_num = Math.abs(outer.skill_short_num);
-            }
-            outer.skill_short_num %= skill_list_short["len"];
-            outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
         });
     }
 
@@ -264,7 +266,10 @@ class Player extends GameObject {
         this.render();
         this.collision();
         this.is_attacked();
-        this.render_UI();
+        if (this.playground.map_id === 1) {
+            this.render_UI();
+        }
+        
         this.update_coldtime();
     }
 

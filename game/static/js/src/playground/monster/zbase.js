@@ -30,6 +30,8 @@ class Monster extends GameObject {
         this.bx = this.x;
         this.by = this.y + 0.015;
         this.HP = HP;
+        this.px = 0;
+        this.py = 0;
 
         //渲染人物图像
         this.img = new Image();
@@ -67,6 +69,13 @@ class Monster extends GameObject {
     }
 
     move_to(tx, ty) {
+        if (this.damage_speed > this.eps) {
+            this.vx = this.vy = 0;
+            this.move_length = 0;
+            this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
+            this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
+            this.damage_speed *= this.friction;
+        }
         this.move_length = this.get_dist(this.x, this.y, tx, ty);
         let angle = Math.atan2(ty - this.y, tx - this.x);
         this.vx = Math.cos(angle);
@@ -95,16 +104,22 @@ class Monster extends GameObject {
             return false;
     }
 
-    collision() {
-        for (let i = 0; i < this.playground.Objects.length; i++) {
-            let obj = this.playground.Objects[i];
-            if (this.is_collision(obj.bx, obj.by, obj.bw, obj.bh)) {
-                console.log(obj.uid);
-                if (obj.fun.fun !== "transparent") {
-                    this.move_length = 0;
-                }
-            }
-        }
+    // collision() {
+    //     for (let i = 0; i < this.playground.Objects.length; i++) {
+    //         let obj = this.playground.Objects[i];
+    //         if (this.is_collision(obj.bx, obj.by, obj.bw, obj.bh)) {
+    //             console.log(obj.uid);
+    //             if (obj.fun.fun !== "transparent") {
+    //                 this.move_length = 0;
+    //             }
+    //         }
+    //     }
+    // }
+
+    get_postion() {
+        let player = this.playground.players[0];
+        this.px = player.x;
+        this.py = player.y;
     }
 
     update_move() {
@@ -124,14 +139,13 @@ class Monster extends GameObject {
     update() {
         this.update_move();
         this.render();
-        this.collision();
-        //console.log(this.width / 6 / this.playground.scale);
-        this.move(0, 0);//控制去的位置
+        // this.collision();
+        this.get_postion();
+        this.move(this.px, this.py);//控制去的位置
         this.is_attacked();
     }
 
     render() {
-        //console.log(this.timedelta);
         let scale = this.playground.scale;
         this.time_last += this.timedelta / 1000;//存在时间
         this.flame = this.time_last * this.rate;//帧播放速率

@@ -202,6 +202,8 @@ requestAnimationFrame(GAME_ANIMATION);class GameMap extends GameObject {
         this.bx = this.x;
         this.by = this.y + 0.015;
         this.HP = HP;
+        this.px = 0;
+        this.py = 0;
 
         //渲染人物图像
         this.img = new Image();
@@ -239,6 +241,13 @@ requestAnimationFrame(GAME_ANIMATION);class GameMap extends GameObject {
     }
 
     move_to(tx, ty) {
+        if (this.damage_speed > this.eps) {
+            this.vx = this.vy = 0;
+            this.move_length = 0;
+            this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
+            this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
+            this.damage_speed *= this.friction;
+        }
         this.move_length = this.get_dist(this.x, this.y, tx, ty);
         let angle = Math.atan2(ty - this.y, tx - this.x);
         this.vx = Math.cos(angle);
@@ -267,16 +276,22 @@ requestAnimationFrame(GAME_ANIMATION);class GameMap extends GameObject {
             return false;
     }
 
-    collision() {
-        for (let i = 0; i < this.playground.Objects.length; i++) {
-            let obj = this.playground.Objects[i];
-            if (this.is_collision(obj.bx, obj.by, obj.bw, obj.bh)) {
-                console.log(obj.uid);
-                if (obj.fun.fun !== "transparent") {
-                    this.move_length = 0;
-                }
-            }
-        }
+    // collision() {
+    //     for (let i = 0; i < this.playground.Objects.length; i++) {
+    //         let obj = this.playground.Objects[i];
+    //         if (this.is_collision(obj.bx, obj.by, obj.bw, obj.bh)) {
+    //             console.log(obj.uid);
+    //             if (obj.fun.fun !== "transparent") {
+    //                 this.move_length = 0;
+    //             }
+    //         }
+    //     }
+    // }
+
+    get_postion() {
+        let player = this.playground.players[0];
+        this.px = player.x;
+        this.py = player.y;
     }
 
     update_move() {
@@ -296,14 +311,13 @@ requestAnimationFrame(GAME_ANIMATION);class GameMap extends GameObject {
     update() {
         this.update_move();
         this.render();
-        this.collision();
-        //console.log(this.width / 6 / this.playground.scale);
-        this.move(0, 0);//控制去的位置
+        // this.collision();
+        this.get_postion();
+        this.move(this.px, this.py);//控制去的位置
         this.is_attacked();
     }
 
     render() {
-        //console.log(this.timedelta);
         let scale = this.playground.scale;
         this.time_last += this.timedelta / 1000;//存在时间
         this.flame = this.time_last * this.rate;//帧播放速率
@@ -561,39 +575,41 @@ class Object_trends extends GameObject {
 
         this.playground.game_map.$canvas.keydown(function (e) {
             console.log(e.which);
-            //远程技能
-            if (e.which === 87) {//触发技能
-                if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
-                    return false;
+            if (outer.playground.map_id === 1) {
+                //远程技能
+                if (e.which === 87) {//触发技能
+                    if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
+                        return false;
+                    }
+                    outer.shoot_long();
                 }
-                outer.shoot_long();
-            }
-            if (e.which === 81) {
-                outer.skill_long_num += 1;
-            }
-            else if (e.which === 69) {
-                outer.skill_long_num -= 1;
-                outer.skill_long_num = Math.abs(outer.skill_long_num);
-            }
-            outer.skill_long_num %= skill_list_long["len"];
-            outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
+                if (e.which === 81) {
+                    outer.skill_long_num += 1;
+                }
+                else if (e.which === 69) {
+                    outer.skill_long_num -= 1;
+                    outer.skill_long_num = Math.abs(outer.skill_long_num);
+                }
+                outer.skill_long_num %= skill_list_long["len"];
+                outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
 
-            //近程技能
-            if (e.which === 83) {//触发技能
-                if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
-                    return false;
+                //近程技能
+                if (e.which === 83) {//触发技能
+                    if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
+                        return false;
+                    }
+                    outer.shoot_short();
                 }
-                outer.shoot_short();
+                if (e.which === 65) {
+                    outer.skill_short_num += 1;
+                }
+                else if (e.which === 68) {
+                    outer.skill_short_num -= 1;
+                    outer.skill_short_num = Math.abs(outer.skill_short_num);
+                }
+                outer.skill_short_num %= skill_list_short["len"];
+                outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
             }
-            if (e.which === 65) {
-                outer.skill_short_num += 1;
-            }
-            else if (e.which === 68) {
-                outer.skill_short_num -= 1;
-                outer.skill_short_num = Math.abs(outer.skill_short_num);
-            }
-            outer.skill_short_num %= skill_list_short["len"];
-            outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
         });
     }
 
@@ -714,7 +730,10 @@ class Object_trends extends GameObject {
         this.render();
         this.collision();
         this.is_attacked();
-        this.render_UI();
+        if (this.playground.map_id === 1) {
+            this.render_UI();
+        }
+        
         this.update_coldtime();
     }
 
@@ -838,9 +857,9 @@ class Object_trends extends GameObject {
         }
 
         this.update_move();
+        this.collision();
 
         this.render();
-        this.collision();
     }
 
     update_move() {
@@ -945,10 +964,12 @@ class Object_trends extends GameObject {
         this.$playground.empty();
         if (id === 1) {
             this.game_map = new GameMap(this, { R: 105, G: 174, B: 160 });//105,174,160
+            this.map_id = 1;
             this.create_map1();
         }
         else if (id === 0) {
             this.game_map = new GameMap(this, { R: 105, G: 174, B: 160 });//217,230,106
+            this.map_id = 0;
             this.create_map0();
         }
     }
@@ -972,8 +993,8 @@ class Object_trends extends GameObject {
         this.Objects.push(new Object(this, "./static/img/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
             change(109), change(128), change(109) * 0.7, change(128) * 0.4, this.width / 4 / this.scale, 47 / 64, { fun: "Tree", id: 1 }));
 
-        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-            0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
+        //     0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
@@ -985,10 +1006,10 @@ class Object_trends extends GameObject {
         this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 3 / this.scale, 1,
             change(50), change(50), change(50), change(50), this.width / 3 / this.scale, 1, { fun: "door", id: 0 }));
 
-        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-            0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
+            0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
         //添加其他玩家
     }
@@ -1013,8 +1034,8 @@ class Object_trends extends GameObject {
     constructor(id) {
         this.id = id;
         this.$game = $('#' + id);
-        this.menu = new GameMenu(this);
+        // this.menu = new GameMenu(this);
         this.playground = new GamePlayground(this);
-        // this.playground.show();
+        this.playground.show();
     }
 }

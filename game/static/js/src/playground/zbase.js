@@ -40,10 +40,12 @@ class GamePlayground {
         this.$playground.empty();
         if (id === 1) {
             this.game_map = new GameMap(this, { R: 105, G: 174, B: 160 });//105,174,160
+            this.map_id = 1;
             this.create_map1();
         }
         else if (id === 0) {
             this.game_map = new GameMap(this, { R: 105, G: 174, B: 160 });//217,230,106
+            this.map_id = 0;
             this.create_map0();
         }
     }
@@ -67,8 +69,8 @@ class GamePlayground {
         this.Objects.push(new Object(this, "./static/img/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
             change(109), change(128), change(109) * 0.7, change(128) * 0.4, this.width / 4 / this.scale, 47 / 64, { fun: "Tree", id: 1 }));
 
-        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-            0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
+        //     0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
@@ -80,10 +82,10 @@ class GamePlayground {
         this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 3 / this.scale, 1,
             change(50), change(50), change(50), change(50), this.width / 3 / this.scale, 1, { fun: "door", id: 0 }));
 
-        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-            0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
+            0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
         //添加其他玩家
     }

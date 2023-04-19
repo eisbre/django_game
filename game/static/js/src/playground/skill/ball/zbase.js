@@ -26,9 +26,9 @@ class Ball extends GameObject {
         }
 
         this.update_move();
+        this.collision();
 
         this.render();
-        this.collision();
     }
 
     update_move() {
