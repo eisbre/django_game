@@ -174,9 +174,9 @@ class Monster extends GameObject {
     }
 
     on_destroy() {
-        for (let i = 0; i < this.playground.players.length; i++) {
-            if (this.playground.players[i] === this) {
-                this.playground.players.splice(i, 1);
+        for (let i = 0; i < this.playground.Monsters.length; i++) {
+            if (this.playground.Monsters[i] === this) {
+                this.playground.Monsters.splice(i, 1);
             }
         }
     }

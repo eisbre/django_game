@@ -31,11 +31,27 @@ class Player extends GameObject {
         this.bh = bh;//碰撞盒子大小
         this.frame = frame;//帧数
         this.rate = rate;
+        this.HP = 100;
+        this.Magic = 100;
+        this.Strength = 100;
+        this.Skill_long_flag = true;
+        this.Skill_short_flag = true;
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
             this.img.src = './static/img/Eilie.png';
         }
+        this.prop1_img = new Image();
+        this.prop1_img.src = './static/img/prop1.png';
+
+        this.prop2_img = new Image();
+        this.prop2_img.src = './static/img/prop2.png';
+
+        this.prop3_img = new Image();
+        this.prop3_img.src = './static/img/prop3.png';
+
+        this.prop4_img = new Image();
+        this.prop4_img.src = './static/img/prop4.png';
 
         this.img_long = new Image();
         this.img_long.src = skill_list_long[`s${this.skill_long_num}`].img;
@@ -117,34 +133,67 @@ class Player extends GameObject {
                     if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
                         return false;
                     }
-                    outer.shoot_long();
+                    if (outer.Skill_long_flag) {
+                        outer.shoot_long();
+                        outer.Magic -= skill_list_long[`s${outer.skill_long_num}`].damage * 0.7;
+                    }
                 }
                 if (e.which === 81) {
                     outer.skill_long_num += 1;
                 }
-                else if (e.which === 69) {
-                    outer.skill_long_num -= 1;
-                    outer.skill_long_num = Math.abs(outer.skill_long_num);
-                }
+                // else if (e.which === 69) {
+                //     outer.skill_long_num -= 1;
+                //     outer.skill_long_num = Math.abs(outer.skill_long_num);
+                // }
                 outer.skill_long_num %= skill_list_long["len"];
                 outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
 
                 //近程技能
-                if (e.which === 83) {//触发技能
+                if (e.which === 32) {//触发技能
                     if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
                         return false;
                     }
-                    outer.shoot_short();
+                    if (outer.Skill_short_flag) {
+                        outer.shoot_short();
+                        outer.Strength -= skill_list_short[`s${outer.skill_short_num}`].damage * 0.7;
+                    }
                 }
-                if (e.which === 65) {
+                if (e.which === 69) {
                     outer.skill_short_num += 1;
                 }
-                else if (e.which === 68) {
-                    outer.skill_short_num -= 1;
-                    outer.skill_short_num = Math.abs(outer.skill_short_num);
-                }
+                // else if (e.which === 68) {
+                //     outer.skill_short_num -= 1;
+                //     outer.skill_short_num = Math.abs(outer.skill_short_num);
+                // }
                 outer.skill_short_num %= skill_list_short["len"];
                 outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
+
+                if (e.which === 49) {
+                    if (prop["p1"] > 0) {
+                        outer.HP = Math.min(100, outer.HP + 10);
+                        prop["p1"] -= 1;
+                    }
+                }
+
+                if (e.which === 50) {
+                    if (prop["p2"] > 0) {
+                        outer.Magic = Math.min(100, outer.Magic + 10);
+                        prop["p2"] -= 1;
+                    }
+                }
+
+                if (e.which === 51) {
+                    if (prop["p3"] > 0) {
+                        outer.Strength = Math.min(100, outer.Strength + 10);
+                        prop["p3"] -= 1;
+                    }
+                }
+
+                if (e.which === 52) {
+                    if (prop["p4"] > 0) {
+                        prop["p4"] -= 1;
+                    }
+                }
             }
         });
     }
@@ -222,12 +271,16 @@ class Player extends GameObject {
             if (this.is_collision(mon.bx, mon.by, mon.bw, mon.bh)) {
                 console.log(mon.uid);
                 let damage = 5;
-                HP -= damage;
+                this.HP -= damage;
                 let angle = Math.atan2(this.y - mon.by, this.x - mon.bx);
                 this.damage_x = Math.cos(angle);
                 this.damage_y = Math.sin(angle);
                 this.damage_speed = damage * 0.2;
                 // this.damage_speed = 0.1;
+                if (this.HP <= 0) {
+                    this.playground.change_map(0);
+                    this.HP = 10;
+                }
             }
         }
     }
@@ -302,8 +355,28 @@ class Player extends GameObject {
 
     render_UI() {
         //血量条
-        let x = 0, y = 0.97, w = 0.2, h = 0.01;
+        let x = 0, y = 0.93, w = 0.2, h = 0.01;
         let scale = this.playground.scale;
+        this.ctx.beginPath();
+        this.ctx.fillStyle = "rgba(117, 116, 116, 1)";
+        this.ctx.lineWidth = 2;
+        this.ctx.rect(x * scale, y * scale, w * scale, h * scale);
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.fillStyle = "rgba(48,142,104, 1)";
+        this.ctx.beginPath();
+        if (this.HP <= 80) {
+            this.ctx.fillStyle = "rgba(18, 188, 56, 1)";
+        }
+        if (this.HP <= 30) {
+            this.ctx.fillStyle = "rgba(255, 51, 51, 1)";
+        }
+        
+        this.ctx.rect(x * scale, y * scale, w * (this.HP / 100) * scale, h * scale);
+        this.ctx.fill();
+
+        //魔法条
+        x = 0, y = 0.95, w = 0.2, h = 0.01;
         this.ctx.beginPath();
         this.ctx.fillStyle = "rgba(117, 116, 116, 1)";
         this.ctx.lineWidth = 2;
@@ -312,8 +385,22 @@ class Player extends GameObject {
         this.ctx.stroke();
 
         this.ctx.beginPath();
-        this.ctx.fillStyle = "rgba(48,142,104, 1)";
-        this.ctx.rect(x * scale, y * scale, w * (HP / 100) * scale, h * scale);
+        this.ctx.fillStyle = "rgba(75, 118, 207, 1)";
+        this.ctx.rect(x * scale, y * scale, w * (this.Magic / 100) * scale, h * scale);
+        this.ctx.fill();
+
+        //体力条
+        x = 0, y = 0.97, w = 0.2, h = 0.01;
+        this.ctx.beginPath();
+        this.ctx.fillStyle = "rgba(117, 116, 116, 1)";
+        this.ctx.lineWidth = 2;
+        this.ctx.rect(x * scale, y * scale, w * scale, h * scale);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.fillStyle = "rgba(234, 152, 83, 1)";
+        this.ctx.rect(x * scale, y * scale, w * (this.Strength / 100) * scale, h * scale);
         this.ctx.fill();
 
         //技能UI
@@ -328,15 +415,28 @@ class Player extends GameObject {
         this.ctx.drawImage(this.img_long, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
         this.ctx.restore();
 
-        if (skill_list_long[`s${this.skill_long_num}`].cold > 0) {
+        if (this.Magic >= skill_list_long[`s${this.skill_long_num}`].damage * 0.7) {
+            this.Skill_long_flag = true;
+            if (skill_list_long[`s${this.skill_long_num}`].cold > 0) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x * scale, y * scale);
+                this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2,
+                    Math.PI * 2 * (1 - skill_list_long[`s${this.skill_long_num}`].cold / skill_list_long[`s${this.skill_long_num}`].total) - Math.PI / 2, true);
+                this.ctx.lineTo(x * scale, y * scale);
+                this.ctx.fillStyle = "rgba(132, 115, 112, 0.4)";
+                this.ctx.fill();
+            }
+        }
+        else {
+            this.Skill_long_flag = false;
             this.ctx.beginPath();
             this.ctx.moveTo(x * scale, y * scale);
-            this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2,
-                Math.PI * 2 * (1 - skill_list_long[`s${this.skill_long_num}`].cold / skill_list_long[`s${this.skill_long_num}`].total) - Math.PI / 2, true);
+            this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, true);
             this.ctx.lineTo(x * scale, y * scale);
-            this.ctx.fillStyle = "rgba(132, 115, 112, 0.4)";
+            this.ctx.fillStyle = "rgba(255, 51, 51, 0.4)";
             this.ctx.fill();
         }
+
         //近程技能
         x = 1.7, y = 0.95;
         this.ctx.save();
@@ -347,15 +447,74 @@ class Player extends GameObject {
         this.ctx.drawImage(this.img_short, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
         this.ctx.restore();
 
-        if (skill_list_short[`s${this.skill_short_num}`].cold > 0) {
+        if (this.Strength >= skill_list_short[`s${this.skill_short_num}`].damage * 0.7) {
+            this.Skill_short_flag = true;
+            if (skill_list_short[`s${this.skill_short_num}`].cold > 0) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x * scale, y * scale);
+                this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2,
+                    Math.PI * 2 * (1 - skill_list_short[`s${this.skill_short_num}`].cold / skill_list_short[`s${this.skill_short_num}`].total) - Math.PI / 2, true);
+                this.ctx.lineTo(x * scale, y * scale);
+                this.ctx.fillStyle = "rgba(132, 115, 112, 0.4)";
+                this.ctx.fill();
+            }
+        }
+        else {
+            this.Skill_short_flag = false;
             this.ctx.beginPath();
             this.ctx.moveTo(x * scale, y * scale);
-            this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2,
-                Math.PI * 2 * (1 - skill_list_short[`s${this.skill_short_num}`].cold / skill_list_short[`s${this.skill_short_num}`].total) - Math.PI / 2, true);
+            this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2 , true);
             this.ctx.lineTo(x * scale, y * scale);
-            this.ctx.fillStyle = "rgba(132, 115, 112, 0.4)";
+            this.ctx.fillStyle = "rgba(255, 51, 51, 0.4)";
             this.ctx.fill();
         }
+
+        //道具
+        //1加血
+        x = 1.2, y = 0.95;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.prop1_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+        this.ctx.fillStyle = "rgba(20, 24, 32, 1)";
+        this.ctx.fillText("1", (x - 0.005) * scale, (y - 0.035) * scale);
+        this.ctx.fillText(prop["p1"].toString(), (x + 0.015) * scale, (y + 0.044) * scale);
+        //2加蓝
+        x = 1.3, y = 0.95;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.prop2_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+        this.ctx.fillText("2", (x - 0.005) * scale, (y - 0.035) * scale);
+        this.ctx.fillText(prop["p2"].toString(), (x + 0.015) * scale, (y + 0.044) * scale);
+        //3加红
+        x = 1.4, y = 0.95;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.prop3_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+        this.ctx.fillText("3", (x - 0.005) * scale, (y - 0.035) * scale);
+        this.ctx.fillText(prop["p3"].toString(), (x + 0.015) * scale, (y + 0.044) * scale);
+        //4炸弹
+        x = 1.5, y = 0.95;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.prop4_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+        this.ctx.fillText("4", (x - 0.005) * scale, (y - 0.035) * scale);
+        this.ctx.fillText(prop["p4"].toString(), (x + 0.015) * scale, (y + 0.044) * scale);
     }
 
     on_destroy() {

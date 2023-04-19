@@ -2,7 +2,7 @@ class GamePlayground {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="game-playground"></div>`);
-        this.map_id = 0;
+        this.map_id = 1;
 
         this.hide();
         this.root.$game.append(this.$playground);
@@ -79,11 +79,34 @@ class GamePlayground {
 
     create_map1() {
         console.log("map1");
-        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 3 / this.scale, 1,
-            change(50), change(50), change(50), change(50), this.width / 3 / this.scale, 1, { fun: "door", id: 0 }));
+        //地图边界碰撞
+        //上边界
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 0,
+            change(50), change(50), change(1500), change(5), this.width / 2 / this.scale, 0, { fun: "border", id: 0 }));
+        //左上角
+        this.Objects.push(new Object(this, "./static/img/blank.png", 0, 0,
+            change(50), change(50), change(10), change(10), 0, 0, { fun: "border", id: 0 }));
+        //左边界
+        this.Objects.push(new Object(this, "./static/img/blank.png", 0, 0.5,
+            change(50), change(50), change(5), change(1500), 0, 0.5, { fun: "border", id: 0 }));
+        //左下角
+        this.Objects.push(new Object(this, "./static/img/blank.png", 0, 1,
+            change(50), change(50), change(10), change(10), 0, 1, { fun: "border", id: 0 }));
+        //下边界
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 1,
+            change(50), change(50), change(1500), change(5), this.width / 2 / this.scale, 1, { fun: "border", id: 0 }));
+        //右下角
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / this.scale, 1,
+            change(50), change(50), change(10), change(10), this.width / this.scale, 1, { fun: "border", id: 0 }));
+        //右边界
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / this.scale, 0.5,
+            change(50), change(50), change(5), change(1500), this.width / this.scale, 0.5, { fun: "border", id: 0 }));
+        //右上角
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / this.scale, 0,
+            change(50), change(50), change(10), change(10), this.width / this.scale, 0, { fun: "border", id: 0 }));
 
-        this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
-            0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
+        //     0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
@@ -99,8 +122,10 @@ class GamePlayground {
         this.resize();
         //添加地图物品
 
-        this.create_map0();
+        this.create_map1();
         //this.create_map1();
+        // this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
+        //     change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
     }
 
     hide() {

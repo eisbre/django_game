@@ -1,6 +1,6 @@
 let GAME_OBJECTS = [];
-let Debug = false;
-let HP = 100;
+let Debug = true;
+
 let skill = "";
 let skill_list_long = {
     len: 2,
@@ -10,9 +10,11 @@ let skill_list_long = {
 
 let skill_list_short = {
     len: 2,
-    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 4 },
-    s1: { name: "drill", img: "./static/img/drill.png", cold: 1, total: 4 },
+    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 4, damage: 50 },
+    s1: { name: "drill", img: "./static/img/drill.png", cold: 1, total: 4, damage: 30 },
 }
+
+let prop = { p1: 5, p2: 5, p3: 5, p4: 5 };
 
 let change = function (num) {
     return num / 1000 * 1.5;
