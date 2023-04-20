@@ -64,15 +64,17 @@ let Debug = true;
 
 let skill = "";
 let skill_list_long = {
-    len: 2,
-    s0: { name: "fireball", img: "./static/img/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 },
-    s1: { name: "goldarrow", img: "./static/img/goldarrow.png", cold: 1, total: 2, color: "white", damage: 30 },
+    len: 3,
+    s0: { name: "fireball", img: "./static/img/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 , length: 1 },
+    s1: { name: "snowstaff", img: "./static/img/snowstaff.png", cold: 1, total: 2, color: "white", damage: 30, length: 0.8 },
+    s2: { name: "poisonstaff", img: "./static/img/poisonstaff.png", cold: 1, total: 4, color: "green", damage: 60, length: 0.6 }
 }
 
 let skill_list_short = {
-    len: 2,
-    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 4, damage: 50 },
-    s1: { name: "drill", img: "./static/img/drill.png", cold: 1, total: 4, damage: 30 },
+    len: 3,
+    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 2, damage: 30 , length: 0.15, time: 1.5 },
+    s1: { name: "knife", img: "./static/img/knife.png", cold: 1, total: 1, damage: 20, length: 0.1, time: 2 },
+    s2: { name: "axe", img: "./static/img/axe.png", cold: 1, total: 4, damage: 50, length: 0.2, time: 1 }
 }
 
 let prop = { p1: 5, p2: 5, p3: 5, p4: 5 };
@@ -227,7 +229,9 @@ requestAnimationFrame(GAME_ANIMATION);class GameMap extends GameObject {
                 this.damage_x = Math.cos(angle);
                 this.damage_y = Math.sin(angle);
                 this.damage_speed = damage * 0.2;
-                obj.destroy();
+                if (obj.long) {
+                    obj.destroy();
+                }
             }
         }
         console.log(this.HP);
@@ -502,11 +506,13 @@ class Object_trends extends GameObject {
         this.Strength = 100;
         this.Skill_long_flag = true;
         this.Skill_short_flag = true;
+        this.protect_time = 5;
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
             this.img.src = './static/img/Eilie.png';
         }
+
         this.prop1_img = new Image();
         this.prop1_img.src = './static/img/prop1.png';
 
@@ -544,9 +550,20 @@ class Object_trends extends GameObject {
         let py = y + len * vy;
         this.ctx.beginPath();
         this.ctx.arc(px, py, 2, 0, Math.PI * 2, false);
-        // this.ctx.fillStyle = "rgba(0, 0, 255, 1)";
         this.ctx.fillStyle = skill_list_long[`s${this.skill_long_num}`].color;
         this.ctx.fill();
+
+        //绘制近战攻击区域
+        let scale = this.playground.scale;
+        let length = skill_list_short[`s${this.skill_short_num}`].length;
+        let bh = 1.414 * length;
+        let bw = 1.414 * length;
+        this.ctx.beginPath();
+        this.ctx.setLineDash([4]);//设定实线与空白的大小
+        this.ctx.rect((this.x - bw / 2) * scale, (this.y - bh / 2) * scale, bw * scale, bh * scale);
+        this.ctx.lineWidth = 0.5;
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
     }
 
     add_listening_events() {//键盘监听
@@ -622,6 +639,7 @@ class Object_trends extends GameObject {
                     if (outer.Skill_short_flag) {
                         outer.shoot_short();
                         outer.Strength -= skill_list_short[`s${outer.skill_short_num}`].damage * 0.7;
+                        outer.move_length = 0;
                     }
                 }
                 if (e.which === 69) {
@@ -679,7 +697,6 @@ class Object_trends extends GameObject {
 
     shoot_long() {
         skill_list_long[`s${this.skill_long_num}`].cold = skill_list_long[`s${this.skill_long_num}`].total;
-        console.log("shoot");
         let x = this.x;
         let y = this.y;
         let radius = 0.01;
@@ -688,7 +705,7 @@ class Object_trends extends GameObject {
         let vy = Math.sin(angle);
         let color = skill_list_long[`s${this.skill_long_num}`].color;
         let speed = 0.5;
-        let move_length = 1;
+        let move_length = skill_list_long[`s${this.skill_long_num}`].length;
         let damage = skill_list_long[`s${this.skill_long_num}`].damage;
         let ball = new Ball(this.playground, x, y, radius, color, speed, vx, vy, move_length, damage);
         this.playground.weapon.push(ball);
@@ -696,7 +713,14 @@ class Object_trends extends GameObject {
 
     shoot_short() {
         skill_list_short[`s${this.skill_short_num}`].cold = skill_list_short[`s${this.skill_short_num}`].total;
-        console.log("shoot");
+        this.now = this.total;
+        let x = this.x;
+        let y = this.y;
+        let radius = skill_list_short[`s${this.skill_short_num}`].length;
+        let damage = skill_list_short[`s${this.skill_short_num}`].damage;
+        let time = skill_list_short[`s${this.skill_short_num}`].time;
+        let attack = new short_attack(this.playground, x, y, radius, damage, time);
+        this.playground.weapon.push(attack);
     }
 
     is_collision(x, y, width, height) {
@@ -737,12 +761,13 @@ class Object_trends extends GameObject {
             if (this.is_collision(mon.bx, mon.by, mon.bw, mon.bh)) {
                 console.log(mon.uid);
                 let damage = 5;
-                this.HP -= damage;
+                if (this.protect_time < this.eps) {
+                    this.HP -= damage;
+                }
                 let angle = Math.atan2(this.y - mon.by, this.x - mon.bx);
                 this.damage_x = Math.cos(angle);
                 this.damage_y = Math.sin(angle);
                 this.damage_speed = damage * 0.2;
-                // this.damage_speed = 0.1;
                 if (this.HP <= 0) {
                     this.playground.change_map(0);
                     this.HP = 10;
@@ -778,6 +803,10 @@ class Object_trends extends GameObject {
 
         skill_list_short[`s${this.skill_short_num}`].cold -= this.timedelta / 1000;
         skill_list_short[`s${this.skill_short_num}`].cold = Math.max(skill_list_short[`s${this.skill_short_num}`].cold, 0);
+
+        if (this.protect_time > this.eps) {
+            this.protect_time -= this.timedelta / 1000;
+        }
     }
 
     update() {
@@ -790,6 +819,7 @@ class Object_trends extends GameObject {
         }
         
         this.update_coldtime();
+        // this.render_short();
     }
 
     render() {
@@ -808,7 +838,9 @@ class Object_trends extends GameObject {
             this.ctx.drawImage(this.img, rechange(this.width) * this.img_x, rechange(this.height) * this.state,
                 rechange(this.width) - 2, rechange(this.height) - 2, (this.x - this.width / 2) * scale, (this.y - this.height / 2) * scale, this.width * scale, this.height * scale);
             this.ctx.restore();
-            this.drawPointLine(this.x * scale, this.y * scale, this.mx, this.my);
+            if (this.playground.map_id === 1) {
+                this.drawPointLine(this.x * scale, this.y * scale, this.mx, this.my);   
+            }
 
             //碰撞盒子
             if (Debug) {
@@ -990,6 +1022,83 @@ class Object_trends extends GameObject {
             }
         }
     }
+}class short_attack extends GameObject {
+    constructor(playground, x, y, radius, damage, time) {
+        super();
+        this.playground = playground;
+        this.bx = this.x = x;
+        this.by = this.y = y;
+        this.radius = radius;
+        this.damage = damage;
+        this.ctx = this.playground.game_map.ctx;
+        this.eps = 0.01;
+        this.bh = this.bw = 1.414 * this.radius;
+        this.time = time;//近程技能效果
+        this.long = false;
+    }
+
+    start() {
+    }
+
+    update() {
+        if (this.time <= this.eps) {
+            this.destroy();
+            return false;
+        }
+        // this.collision();
+
+        this.render();
+        this.time -= this.timedelta / 1000;
+        this.time = Math.max(this.time, 0);
+        this.bx = this.playground.players[0].x;
+        this.by = this.playground.players[0].y;
+    }
+
+    is_collision(x, y, width, height) {
+        let w = Math.abs(this.x - x);
+        let h = Math.abs(this.y - y);
+
+        if (w < (this.bw + width) / 2 && h < (this.bh + height) / 2)
+            return true;
+        else
+            return false;
+    }
+
+    collision() {
+        for (let i = 0; i < this.playground.Objects.length; i++) {
+            let obj = this.playground.Objects[i];
+            if (this.is_collision(obj.bx, obj.by, obj.bw, obj.bh)) {
+                console.log(obj.uid);
+                if (obj.fun.fun !== "transparent") {
+                    this.destroy();
+                }
+            }
+        }
+    }
+
+    render() {
+        let scale = this.playground.scale;
+        this.ctx.beginPath();
+        this.ctx.rect((this.bx - this.bw / 2) * scale, (this.by - this.bh / 2) * scale, this.bw * scale, this.bh * scale);
+        this.ctx.lineWidth=1;
+        this.ctx.stroke();
+
+        // if (Debug) {
+        //     this.ctx.beginPath();
+        //     this.ctx.rect((this.bx - this.bw / 2) * scale, (this.by - this.bh / 2) * scale, this.bw * scale, this.bh * scale);
+        //     this.ctx.stroke();
+        // }
+    }
+
+    on_destroy() {
+        let balls = this.playground.weapon;
+        for (let i = 0; i < balls.length; i++) {
+            if (balls[i] === this) {
+                balls.splice(i, 1);
+                break;
+            }
+        }
+    }
 }class Ball extends GameObject {
     constructor(playground, x, y, radius, color, speed, vx, vy, move_length, damage) {
         super();
@@ -1006,6 +1115,7 @@ class Object_trends extends GameObject {
         this.ctx = this.playground.game_map.ctx;
         this.eps = 0.01;
         this.bh = this.bw = 1.414 * this.radius;
+        this.long = true;
     }
 
     start() {
@@ -1135,6 +1245,14 @@ class Object_trends extends GameObject {
         }
     }
 
+    create_monster1(num) {
+        for (let i = 0; i < num; i++){
+            let random = Math.random();
+            this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width * random / this.scale, random, change(90), change(90),
+                0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        }
+    }
+
     create_map0() {
         console.log("map0");
         //设置位置的时候使用比例，不要使用确定值
@@ -1153,9 +1271,6 @@ class Object_trends extends GameObject {
 
         this.Objects.push(new Object(this, "./static/img/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
             change(109), change(128), change(109) * 0.7, change(128) * 0.4, this.width / 4 / this.scale, 47 / 64, { fun: "Tree", id: 1 }));
-
-        // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-        //     0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
@@ -1192,6 +1307,7 @@ class Object_trends extends GameObject {
 
         // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
         //     0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        this.create_monster1(5);
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己

@@ -3,15 +3,17 @@ let Debug = true;
 
 let skill = "";
 let skill_list_long = {
-    len: 2,
-    s0: { name: "fireball", img: "./static/img/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 },
-    s1: { name: "goldarrow", img: "./static/img/goldarrow.png", cold: 1, total: 2, color: "white", damage: 30 },
+    len: 3,
+    s0: { name: "fireball", img: "./static/img/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 , length: 1 },
+    s1: { name: "snowstaff", img: "./static/img/snowstaff.png", cold: 1, total: 2, color: "white", damage: 30, length: 0.8 },
+    s2: { name: "poisonstaff", img: "./static/img/poisonstaff.png", cold: 1, total: 4, color: "green", damage: 60, length: 0.6 }
 }
 
 let skill_list_short = {
-    len: 2,
-    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 4, damage: 50 },
-    s1: { name: "drill", img: "./static/img/drill.png", cold: 1, total: 4, damage: 30 },
+    len: 3,
+    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 2, damage: 30 , length: 0.15, time: 1.5 },
+    s1: { name: "knife", img: "./static/img/knife.png", cold: 1, total: 1, damage: 20, length: 0.1, time: 2 },
+    s2: { name: "axe", img: "./static/img/axe.png", cold: 1, total: 4, damage: 50, length: 0.2, time: 1 }
 }
 
 let prop = { p1: 5, p2: 5, p3: 5, p4: 5 };

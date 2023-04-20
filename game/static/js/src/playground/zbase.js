@@ -50,6 +50,14 @@ class GamePlayground {
         }
     }
 
+    create_monster1(num) {
+        for (let i = 0; i < num; i++){
+            let random = Math.random();
+            this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width * random / this.scale, random, change(90), change(90),
+                0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        }
+    }
+
     create_map0() {
         console.log("map0");
         //设置位置的时候使用比例，不要使用确定值
@@ -68,9 +76,6 @@ class GamePlayground {
 
         this.Objects.push(new Object(this, "./static/img/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
             change(109), change(128), change(109) * 0.7, change(128) * 0.4, this.width / 4 / this.scale, 47 / 64, { fun: "Tree", id: 1 }));
-
-        // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.25, change(90), change(90),
-        //     0.2, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
@@ -107,6 +112,7 @@ class GamePlayground {
 
         // this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width / 4 / this.scale, 0.5, change(90), change(90),
         //     0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+        this.create_monster1(5);
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
             change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己

@@ -53,7 +53,9 @@ class Monster extends GameObject {
                 this.damage_x = Math.cos(angle);
                 this.damage_y = Math.sin(angle);
                 this.damage_speed = damage * 0.2;
-                obj.destroy();
+                if (obj.long) {
+                    obj.destroy();
+                }
             }
         }
         console.log(this.HP);

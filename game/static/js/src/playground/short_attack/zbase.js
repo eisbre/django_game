@@ -1,50 +1,33 @@
-class Ball extends GameObject {
-    constructor(playground, x, y, radius, color, speed, vx, vy, move_length, damage) {
+class short_attack extends GameObject {
+    constructor(playground, x, y, radius, damage, time) {
         super();
         this.playground = playground;
-        this.x = x;
-        this.y = y;
+        this.bx = this.x = x;
+        this.by = this.y = y;
         this.radius = radius;
-        this.color = color;
-        this.speed = speed;
-        this.vx = vx;
-        this.vy = vy;
-        this.move_length = move_length;
         this.damage = damage;
         this.ctx = this.playground.game_map.ctx;
         this.eps = 0.01;
         this.bh = this.bw = 1.414 * this.radius;
-        this.long = true;
+        this.time = time;//近程技能效果
+        this.long = false;
     }
 
     start() {
     }
 
     update() {
-        if (this.move_length < this.eps) {
+        if (this.time <= this.eps) {
             this.destroy();
             return false;
         }
-
-        this.update_move();
-        this.collision();
+        // this.collision();
 
         this.render();
-    }
-
-    update_move() {
-        let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
-        this.x += this.vx * moved;
-        this.y += this.vy * moved;
-        this.move_length -= moved;
-        this.bx = this.x;
-        this.by = this.y;
-    }
-
-    get_dist(x1, y1, x2, y2) {
-        let dx = x1 - x2;
-        let dy = y1 - y2;
-        return Math.sqrt(dx * dx + dy * dy);
+        this.time -= this.timedelta / 1000;
+        this.time = Math.max(this.time, 0);
+        this.bx = this.playground.players[0].x;
+        this.by = this.playground.players[0].y;
     }
 
     is_collision(x, y, width, height) {
@@ -72,15 +55,15 @@ class Ball extends GameObject {
     render() {
         let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        this.ctx.rect((this.bx - this.bw / 2) * scale, (this.by - this.bh / 2) * scale, this.bw * scale, this.bh * scale);
+        this.ctx.lineWidth=1;
+        this.ctx.stroke();
 
-        if (Debug) {
-            this.ctx.beginPath();
-            this.ctx.rect((this.bx - this.bw / 2) * scale, (this.by - this.bh / 2) * scale, this.bw * scale, this.bh * scale);
-            this.ctx.stroke();
-        }
+        // if (Debug) {
+        //     this.ctx.beginPath();
+        //     this.ctx.rect((this.bx - this.bw / 2) * scale, (this.by - this.bh / 2) * scale, this.bw * scale, this.bh * scale);
+        //     this.ctx.stroke();
+        // }
     }
 
     on_destroy() {

@@ -36,11 +36,13 @@ class Player extends GameObject {
         this.Strength = 100;
         this.Skill_long_flag = true;
         this.Skill_short_flag = true;
+        this.protect_time = 5;
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
             this.img.src = './static/img/Eilie.png';
         }
+
         this.prop1_img = new Image();
         this.prop1_img.src = './static/img/prop1.png';
 
@@ -78,9 +80,20 @@ class Player extends GameObject {
         let py = y + len * vy;
         this.ctx.beginPath();
         this.ctx.arc(px, py, 2, 0, Math.PI * 2, false);
-        // this.ctx.fillStyle = "rgba(0, 0, 255, 1)";
         this.ctx.fillStyle = skill_list_long[`s${this.skill_long_num}`].color;
         this.ctx.fill();
+
+        //绘制近战攻击区域
+        let scale = this.playground.scale;
+        let length = skill_list_short[`s${this.skill_short_num}`].length;
+        let bh = 1.414 * length;
+        let bw = 1.414 * length;
+        this.ctx.beginPath();
+        this.ctx.setLineDash([4]);//设定实线与空白的大小
+        this.ctx.rect((this.x - bw / 2) * scale, (this.y - bh / 2) * scale, bw * scale, bh * scale);
+        this.ctx.lineWidth = 0.5;
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
     }
 
     add_listening_events() {//键盘监听
@@ -156,6 +169,7 @@ class Player extends GameObject {
                     if (outer.Skill_short_flag) {
                         outer.shoot_short();
                         outer.Strength -= skill_list_short[`s${outer.skill_short_num}`].damage * 0.7;
+                        outer.move_length = 0;
                     }
                 }
                 if (e.which === 69) {
@@ -213,7 +227,6 @@ class Player extends GameObject {
 
     shoot_long() {
         skill_list_long[`s${this.skill_long_num}`].cold = skill_list_long[`s${this.skill_long_num}`].total;
-        console.log("shoot");
         let x = this.x;
         let y = this.y;
         let radius = 0.01;
@@ -222,7 +235,7 @@ class Player extends GameObject {
         let vy = Math.sin(angle);
         let color = skill_list_long[`s${this.skill_long_num}`].color;
         let speed = 0.5;
-        let move_length = 1;
+        let move_length = skill_list_long[`s${this.skill_long_num}`].length;
         let damage = skill_list_long[`s${this.skill_long_num}`].damage;
         let ball = new Ball(this.playground, x, y, radius, color, speed, vx, vy, move_length, damage);
         this.playground.weapon.push(ball);
@@ -230,7 +243,14 @@ class Player extends GameObject {
 
     shoot_short() {
         skill_list_short[`s${this.skill_short_num}`].cold = skill_list_short[`s${this.skill_short_num}`].total;
-        console.log("shoot");
+        this.now = this.total;
+        let x = this.x;
+        let y = this.y;
+        let radius = skill_list_short[`s${this.skill_short_num}`].length;
+        let damage = skill_list_short[`s${this.skill_short_num}`].damage;
+        let time = skill_list_short[`s${this.skill_short_num}`].time;
+        let attack = new short_attack(this.playground, x, y, radius, damage, time);
+        this.playground.weapon.push(attack);
     }
 
     is_collision(x, y, width, height) {
@@ -271,12 +291,13 @@ class Player extends GameObject {
             if (this.is_collision(mon.bx, mon.by, mon.bw, mon.bh)) {
                 console.log(mon.uid);
                 let damage = 5;
-                this.HP -= damage;
+                if (this.protect_time < this.eps) {
+                    this.HP -= damage;
+                }
                 let angle = Math.atan2(this.y - mon.by, this.x - mon.bx);
                 this.damage_x = Math.cos(angle);
                 this.damage_y = Math.sin(angle);
                 this.damage_speed = damage * 0.2;
-                // this.damage_speed = 0.1;
                 if (this.HP <= 0) {
                     this.playground.change_map(0);
                     this.HP = 10;
@@ -312,6 +333,10 @@ class Player extends GameObject {
 
         skill_list_short[`s${this.skill_short_num}`].cold -= this.timedelta / 1000;
         skill_list_short[`s${this.skill_short_num}`].cold = Math.max(skill_list_short[`s${this.skill_short_num}`].cold, 0);
+
+        if (this.protect_time > this.eps) {
+            this.protect_time -= this.timedelta / 1000;
+        }
     }
 
     update() {
@@ -324,6 +349,7 @@ class Player extends GameObject {
         }
         
         this.update_coldtime();
+        // this.render_short();
     }
 
     render() {
@@ -342,7 +368,9 @@ class Player extends GameObject {
             this.ctx.drawImage(this.img, rechange(this.width) * this.img_x, rechange(this.height) * this.state,
                 rechange(this.width) - 2, rechange(this.height) - 2, (this.x - this.width / 2) * scale, (this.y - this.height / 2) * scale, this.width * scale, this.height * scale);
             this.ctx.restore();
-            this.drawPointLine(this.x * scale, this.y * scale, this.mx, this.my);
+            if (this.playground.map_id === 1) {
+                this.drawPointLine(this.x * scale, this.y * scale, this.mx, this.my);   
+            }
 
             //碰撞盒子
             if (Debug) {
