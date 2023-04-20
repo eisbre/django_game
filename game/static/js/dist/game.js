@@ -507,6 +507,7 @@ class Object_trends extends GameObject {
         this.Skill_long_flag = true;
         this.Skill_short_flag = true;
         this.protect_time = 5;
+        this.action;
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
@@ -602,17 +603,8 @@ class Object_trends extends GameObject {
                 }
                 outer.move_to(tx, ty);
             }
-            else if (e.which === 1) {
-                let tx = (e.clientX - rect.left) / outer.playground.scale;
-                let ty = (e.clientY - rect.top) / outer.playground.scale;
-            }
-        });
-
-        this.playground.game_map.$canvas.keydown(function (e) {
-            console.log(e.which);
-            if (outer.playground.map_id === 1) {
-                //远程技能
-                if (e.which === 87) {//触发技能
+            if (e.which === 1) {
+                if (outer.playground.map_id === 1) {
                     if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
                         return false;
                     }
@@ -621,6 +613,39 @@ class Object_trends extends GameObject {
                         outer.Magic -= skill_list_long[`s${outer.skill_long_num}`].damage * 0.7;
                     }
                 }
+            }
+        });
+
+        // this.playground.game_map.$canvas.keyup(function (e) {
+        //     if (e.which === 70) {
+                
+        //     }
+        // });
+
+        this.playground.game_map.$canvas.keydown(function (e) {
+            if (e.which === 70) {
+                if (typeof (outer.action) === "undefined") {
+                    return false;
+                }
+                else {
+                    if (outer.action.fun.fun === "door") {
+                        outer.playground.change_map(outer.action.fun.id);
+                        outer.action = undefined;
+                    }
+                }
+            }
+            console.log(e.which);
+            if (outer.playground.map_id === 1) {
+                //远程技能
+                // if (e.which === 87) {//触发技能
+                //     if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
+                //         return false;
+                //     }
+                //     if (outer.Skill_long_flag) {
+                //         outer.shoot_long();
+                //         outer.Magic -= skill_list_long[`s${outer.skill_long_num}`].damage * 0.7;
+                //     }
+                // }
                 if (e.which === 81) {
                     outer.skill_long_num += 1;
                 }
@@ -632,7 +657,7 @@ class Object_trends extends GameObject {
                 outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
 
                 //近程技能
-                if (e.which === 32) {//触发技能
+                if (e.which === 87) {//触发技能
                     if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
                         return false;
                     }
@@ -651,7 +676,7 @@ class Object_trends extends GameObject {
                 // }
                 outer.skill_short_num %= skill_list_short["len"];
                 outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
-
+                //使用道具
                 if (e.which === 49) {
                     if (prop["p1"] > 0) {
                         outer.HP = Math.min(100, outer.HP + 10);
@@ -741,7 +766,12 @@ class Object_trends extends GameObject {
                 if (obj.fun.fun !== "transparent") {
                     this.move_length = 0;
                     if (obj.fun.fun === "door") {
-                        this.playground.change_map(obj.fun.id);
+                        // this.playground.change_map(obj.fun.id);
+                        this.action = obj;
+                        let scale = this.playground.scale;
+                        this.ctx.beginPath();
+                        this.ctx.fillStyle = "black";
+                        this.ctx.fillText("F", (this.x + 0.02) * scale, (this.y) * scale);
                     }
                     else {
                         let angle = Math.atan2(this.y - obj.by, this.x - obj.bx);
@@ -1197,7 +1227,7 @@ class Object_trends extends GameObject {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="game-playground"></div>`);
-        this.map_id = 1;
+        this.map_id = 0;
 
         this.hide();
         this.root.$game.append(this.$playground);
@@ -1258,10 +1288,10 @@ class Object_trends extends GameObject {
         //设置位置的时候使用比例，不要使用确定值
         this.Objects.push(new Object(this, "./static/img/House0.png", this.width * 3 / 4 / this.scale, 0.5,
             change(207), change(201), change(207) * 0.7, change(201) * 0.7, this.width * 3 / 4 / this.scale, 0.5, { fun: "structure", id: 1 }));
-        this.Objects.push(new Object(this, "./static/img/House1.png", this.width / 2 / this.scale, 0.3,
+        this.Objects.push(new Object(this, "./static/img/House1.png", this.width / 2 / this.scale, 0.3,//红房子
             change(161), change(141), change(161) * 0.9, change(141) * 0.7, (this.width) / 2 / this.scale, 0.3, { fun: "structure", id: 1 }));
-        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 1,
-            change(50), change(50), change(50), change(50), this.width / 2 / this.scale, 1, { fun: "door", id: 1 }));
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 0.35,
+            change(50), change(50), change(35), change(50), this.width * 14 / 30 / this.scale, 0.36, { fun: "door", id: 1 }));
 
         this.Objects.push(new Object_trends(this, "./static/img/fountain.png", this.width / 4 / this.scale, 0.5,
             change(96), change(100), change(96) * 0.8, change(100) * 0.6, this.width / 4 / this.scale, 0.5, { fun: "structure", id: 1 }, 10, 10));
@@ -1323,7 +1353,7 @@ class Object_trends extends GameObject {
         this.resize();
         //添加地图物品
 
-        this.create_map1();
+        this.create_map0();
         //this.create_map1();
         // this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
         //     change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己

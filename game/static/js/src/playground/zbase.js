@@ -2,7 +2,7 @@ class GamePlayground {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="game-playground"></div>`);
-        this.map_id = 1;
+        this.map_id = 0;
 
         this.hide();
         this.root.$game.append(this.$playground);
@@ -63,10 +63,10 @@ class GamePlayground {
         //设置位置的时候使用比例，不要使用确定值
         this.Objects.push(new Object(this, "./static/img/House0.png", this.width * 3 / 4 / this.scale, 0.5,
             change(207), change(201), change(207) * 0.7, change(201) * 0.7, this.width * 3 / 4 / this.scale, 0.5, { fun: "structure", id: 1 }));
-        this.Objects.push(new Object(this, "./static/img/House1.png", this.width / 2 / this.scale, 0.3,
+        this.Objects.push(new Object(this, "./static/img/House1.png", this.width / 2 / this.scale, 0.3,//红房子
             change(161), change(141), change(161) * 0.9, change(141) * 0.7, (this.width) / 2 / this.scale, 0.3, { fun: "structure", id: 1 }));
-        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 1,
-            change(50), change(50), change(50), change(50), this.width / 2 / this.scale, 1, { fun: "door", id: 1 }));
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 0.35,
+            change(50), change(50), change(35), change(50), this.width * 14 / 30 / this.scale, 0.36, { fun: "door", id: 1 }));
 
         this.Objects.push(new Object_trends(this, "./static/img/fountain.png", this.width / 4 / this.scale, 0.5,
             change(96), change(100), change(96) * 0.8, change(100) * 0.6, this.width / 4 / this.scale, 0.5, { fun: "structure", id: 1 }, 10, 10));
@@ -128,7 +128,7 @@ class GamePlayground {
         this.resize();
         //添加地图物品
 
-        this.create_map1();
+        this.create_map0();
         //this.create_map1();
         // this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
         //     change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己

@@ -37,6 +37,7 @@ class Player extends GameObject {
         this.Skill_long_flag = true;
         this.Skill_short_flag = true;
         this.protect_time = 5;
+        this.action;
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
@@ -132,17 +133,8 @@ class Player extends GameObject {
                 }
                 outer.move_to(tx, ty);
             }
-            else if (e.which === 1) {
-                let tx = (e.clientX - rect.left) / outer.playground.scale;
-                let ty = (e.clientY - rect.top) / outer.playground.scale;
-            }
-        });
-
-        this.playground.game_map.$canvas.keydown(function (e) {
-            console.log(e.which);
-            if (outer.playground.map_id === 1) {
-                //远程技能
-                if (e.which === 87) {//触发技能
+            if (e.which === 1) {
+                if (outer.playground.map_id === 1) {
                     if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
                         return false;
                     }
@@ -151,6 +143,39 @@ class Player extends GameObject {
                         outer.Magic -= skill_list_long[`s${outer.skill_long_num}`].damage * 0.7;
                     }
                 }
+            }
+        });
+
+        // this.playground.game_map.$canvas.keyup(function (e) {
+        //     if (e.which === 70) {
+                
+        //     }
+        // });
+
+        this.playground.game_map.$canvas.keydown(function (e) {
+            if (e.which === 70) {
+                if (typeof (outer.action) === "undefined") {
+                    return false;
+                }
+                else {
+                    if (outer.action.fun.fun === "door") {
+                        outer.playground.change_map(outer.action.fun.id);
+                        outer.action = undefined;
+                    }
+                }
+            }
+            console.log(e.which);
+            if (outer.playground.map_id === 1) {
+                //远程技能
+                // if (e.which === 87) {//触发技能
+                //     if (skill_list_long[`s${outer.skill_long_num}`].cold > outer.eps) {
+                //         return false;
+                //     }
+                //     if (outer.Skill_long_flag) {
+                //         outer.shoot_long();
+                //         outer.Magic -= skill_list_long[`s${outer.skill_long_num}`].damage * 0.7;
+                //     }
+                // }
                 if (e.which === 81) {
                     outer.skill_long_num += 1;
                 }
@@ -162,7 +187,7 @@ class Player extends GameObject {
                 outer.img_long.src = skill_list_long[`s${outer.skill_long_num}`].img;
 
                 //近程技能
-                if (e.which === 32) {//触发技能
+                if (e.which === 87) {//触发技能
                     if (skill_list_short[`s${outer.skill_short_num}`].cold > outer.eps) {
                         return false;
                     }
@@ -181,7 +206,7 @@ class Player extends GameObject {
                 // }
                 outer.skill_short_num %= skill_list_short["len"];
                 outer.img_short.src = skill_list_short[`s${outer.skill_short_num}`].img;
-
+                //使用道具
                 if (e.which === 49) {
                     if (prop["p1"] > 0) {
                         outer.HP = Math.min(100, outer.HP + 10);
@@ -271,7 +296,12 @@ class Player extends GameObject {
                 if (obj.fun.fun !== "transparent") {
                     this.move_length = 0;
                     if (obj.fun.fun === "door") {
-                        this.playground.change_map(obj.fun.id);
+                        // this.playground.change_map(obj.fun.id);
+                        this.action = obj;
+                        let scale = this.playground.scale;
+                        this.ctx.beginPath();
+                        this.ctx.fillStyle = "black";
+                        this.ctx.fillText("F", (this.x + 0.02) * scale, (this.y) * scale);
                     }
                     else {
                         let angle = Math.atan2(this.y - obj.by, this.x - obj.bx);
