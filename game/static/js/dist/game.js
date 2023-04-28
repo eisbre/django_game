@@ -65,16 +65,16 @@ let Debug = true;
 let skill = "";
 let skill_list_long = {
     len: 3,
-    s0: { name: "fireball", img: "./static/img/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 , length: 1 },
-    s1: { name: "snowstaff", img: "./static/img/snowstaff.png", cold: 1, total: 2, color: "white", damage: 30, length: 0.8 },
-    s2: { name: "poisonstaff", img: "./static/img/poisonstaff.png", cold: 1, total: 4, color: "green", damage: 60, length: 0.6 }
+    s0: { name: "fireball", img: "./static/img/weapon/firestaff.png", cold: 2, total: 3, color: "orange", damage: 50 , length: 1 },
+    s1: { name: "snowstaff", img: "./static/img/weapon/snowstaff.png", cold: 1, total: 2, color: "white", damage: 30, length: 0.8 },
+    s2: { name: "poisonstaff", img: "./static/img/weapon/poisonstaff.png", cold: 1, total: 4, color: "green", damage: 60, length: 0.6 }
 }
 
 let skill_list_short = {
     len: 3,
-    s0: { name: "goldsword", img: "./static/img/goldsword.png", cold: 1, total: 2, damage: 30 , length: 0.15, time: 1.5 },
-    s1: { name: "knife", img: "./static/img/knife.png", cold: 1, total: 1, damage: 20, length: 0.1, time: 2 },
-    s2: { name: "axe", img: "./static/img/axe.png", cold: 1, total: 4, damage: 50, length: 0.2, time: 1 }
+    s0: { name: "goldsword", img: "./static/img/weapon/goldsword.png", cold: 1, total: 2, damage: 30 , length: 0.15, time: 1.5 },
+    s1: { name: "knife", img: "./static/img/weapon/knife.png", cold: 1, total: 1, damage: 20, length: 0.1, time: 2 },
+    s2: { name: "axe", img: "./static/img/weapon/axe.png", cold: 1, total: 4, damage: 50, length: 0.2, time: 1 }
 }
 
 let prop = { p1: 5, p2: 5, p3: 5, p4: 5 };
@@ -511,20 +511,20 @@ class Object_trends extends GameObject {
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
-            this.img.src = './static/img/Eilie.png';
+            this.img.src = './static/img/character/Eilie.png';
         }
 
         this.prop1_img = new Image();
-        this.prop1_img.src = './static/img/prop1.png';
+        this.prop1_img.src = './static/img/prop/prop1.png';
 
         this.prop2_img = new Image();
-        this.prop2_img.src = './static/img/prop2.png';
+        this.prop2_img.src = './static/img/prop/prop2.png';
 
         this.prop3_img = new Image();
-        this.prop3_img.src = './static/img/prop3.png';
+        this.prop3_img.src = './static/img/prop/prop3.png';
 
         this.prop4_img = new Image();
-        this.prop4_img.src = './static/img/prop4.png';
+        this.prop4_img.src = './static/img/prop/prop4.png';
 
         this.img_long = new Image();
         this.img_long.src = skill_list_long[`s${this.skill_long_num}`].img;
@@ -623,13 +623,17 @@ class Object_trends extends GameObject {
         // });
 
         this.playground.game_map.$canvas.keydown(function (e) {
-            if (e.which === 70) {
+            if (e.which === 70) {//按F交互
                 if (typeof (outer.action) === "undefined") {
                     return false;
                 }
                 else {
                     if (outer.action.fun.fun === "door") {
                         outer.playground.change_map(outer.action.fun.id);
+                        outer.action = undefined;
+                    }
+                    else if (outer.action.fun.fun === "pot") {
+                        outer.pot();
                         outer.action = undefined;
                     }
                 }
@@ -707,6 +711,10 @@ class Object_trends extends GameObject {
         });
     }
 
+    pot() {//使用pot
+        console.log("pot");
+    }
+
     get_dist(x1, y1, x2, y2) {
         let dx = x1 - x2;
         let dy = y1 - y2;
@@ -771,7 +779,17 @@ class Object_trends extends GameObject {
                         let scale = this.playground.scale;
                         this.ctx.beginPath();
                         this.ctx.fillStyle = "black";
-                        this.ctx.fillText("F", (this.x + 0.02) * scale, (this.y) * scale);
+                        this.ctx.font = "20px serif";
+                        this.ctx.fillText("按F进入", (this.x + 0.02) * scale, (this.y) * scale);
+                    }
+                    else if (obj.fun.fun === "pot") {
+                        // this.playground.change_map(obj.fun.id);
+                        this.action = obj;
+                        let scale = this.playground.scale;
+                        this.ctx.beginPath();
+                        this.ctx.fillStyle = "black";
+                        this.ctx.font = "20px serif";
+                        this.ctx.fillText("按F使用", (this.x + 0.02) * scale, (this.y) * scale);
                     }
                     else {
                         let angle = Math.atan2(this.y - obj.by, this.x - obj.bx);
@@ -1227,7 +1245,7 @@ class Object_trends extends GameObject {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="game-playground"></div>`);
-        this.map_id = 0;
+        this.map_id = 2;
 
         this.hide();
         this.root.$game.append(this.$playground);
@@ -1273,33 +1291,42 @@ class Object_trends extends GameObject {
             this.map_id = 0;
             this.create_map0();
         }
+        else if (id === 2) {
+            this.game_map = new GameMap(this, { R: 105, G: 174, B: 160 });//217,230,106
+            this.map_id = 2;
+            this.create_map2();
+        }
     }
 
     create_monster1(num) {
         for (let i = 0; i < num; i++){
             let random = Math.random();
-            this.Monsters.push(new Monster(this, "./static/img/monster1.png", this.width * random / this.scale, random, change(90), change(90),
-                0.1, "monster", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
+            this.Monsters.push(new Monster(this, "./static/img/monster/monster1.png", this.width * random / this.scale, random, change(90), change(90),
+                0.1, "monster1", change(90) * 0.3, change(90) * 0.2, 0, 0, 7, 7.5, 100));
         }
     }
 
     create_map0() {
         console.log("map0");
         //设置位置的时候使用比例，不要使用确定值
-        this.Objects.push(new Object(this, "./static/img/House0.png", this.width * 3 / 4 / this.scale, 0.5,
+        this.Objects.push(new Object(this, "./static/img/house/House0.png", this.width * 3 / 4 / this.scale, 0.5,
             change(207), change(201), change(207) * 0.7, change(201) * 0.7, this.width * 3 / 4 / this.scale, 0.5, { fun: "structure", id: 1 }));
-        this.Objects.push(new Object(this, "./static/img/House1.png", this.width / 2 / this.scale, 0.3,//红房子
+        
+        this.Objects.push(new Object(this, "./static/img/house/House1.png", this.width / 2 / this.scale, 0.3,//红房子
             change(161), change(141), change(161) * 0.9, change(141) * 0.7, (this.width) / 2 / this.scale, 0.3, { fun: "structure", id: 1 }));
         this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 0.35,
-            change(50), change(50), change(35), change(50), this.width * 14 / 30 / this.scale, 0.36, { fun: "door", id: 1 }));
+            change(50), change(50), change(35), change(50), this.width * 14 / 30 / this.scale, 0.36, { fun: "door", id: 1 }));//House1的门
+        
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width * 3 / 4 / this.scale, 0.5,
+            change(50), change(50), change(35), change(50), this.width * 3 / 4 / this.scale, 0.6, { fun: "door", id: 2 }));//House0的门
 
-        this.Objects.push(new Object_trends(this, "./static/img/fountain.png", this.width / 4 / this.scale, 0.5,
+        this.Objects.push(new Object_trends(this, "./static/img/structure/fountain.png", this.width / 4 / this.scale, 0.5,
             change(96), change(100), change(96) * 0.8, change(100) * 0.6, this.width / 4 / this.scale, 0.5, { fun: "structure", id: 1 }, 10, 10));
 
-        this.Objects.push(new Object(this, "./static/img/Bush2.png", this.width / 3 / this.scale, 1 / 3,
+        this.Objects.push(new Object(this, "./static/img/plant/Bush2.png", this.width / 3 / this.scale, 1 / 3,
             change(44), change(33), change(44), change(33), this.width / 3 / this.scale, 1 / 3, { fun: "transparent", id: 1 }));
 
-        this.Objects.push(new Object(this, "./static/img/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
+        this.Objects.push(new Object(this, "./static/img/plant/Tree_Swing.png", this.width / 4 / this.scale, 3 / 4,
             change(109), change(128), change(109) * 0.7, change(128) * 0.4, this.width / 4 / this.scale, 47 / 64, { fun: "Tree", id: 1 }));
 
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.15, "me",
@@ -1344,6 +1371,39 @@ class Object_trends extends GameObject {
         //添加其他玩家
     }
 
+    create_map2() {
+        console.log("map2");
+        this.Floor = new Object(this, "./static/img/witch_house/Floor1.png", this.width / 2 / this.scale, 0.5,
+            change(1200), change(675), change(1200), change(675), this.width / 2 / this.scale, 0.5, { fun: "transparent", id: 1 });//地板
+        
+        this.base = new Object(this, "./static/img/witch_house/base0.png", this.width * 0.24 / this.scale, 0.39,
+            change(578), change(318), change(578), change(318), this.width * 0.24 / this.scale, 0.39, { fun: "transparent", id: 1 });//石阶
+        
+        this.wall = new Object(this, "./static/img/witch_house/Wall0.png", this.width / 2 / this.scale, 0.08,
+            change(1200), change(100), change(1200), change(100), this.width / 2 / this.scale, 0.08, { fun: "transparent", id: 1 });//墙
+        
+        this.Carpet = new Object(this, "./static/img/witch_house/Carpet0.png", this.width / 2 / this.scale, 0.96,
+            change(120), change(52), change(120), change(52), this.width / 2 / this.scale, 0.96, { fun: "transparent", id: 1 });//地毯
+        
+        this.Objects.push(new Object(this, "./static/img/witch_house/PotBase.png", this.width * 0.33 / this.scale, 0.35,
+            change(115), change(115), change(115) * 0.7, change(115) * 0.6, this.width * 0.33 / this.scale, 0.35, { fun: "pot", id: 1 }));//锅底座
+        
+        this.pot = new Object(this, "./static/img/witch_house/Pot.png", this.width * 0.33 / this.scale, 0.34,
+            change(102), change(85), change(102), change(85), this.width * 0.33 / this.scale, 0.34, { fun: "transparent", id: 1 });//锅
+        
+        this.potfire = new Object_trends(this, "./static/img/witch_house/PotFire.png", this.width * 0.333 / this.scale, 0.38,
+            change(91.8), change(40), change(91.8), change(40), this.width * 0.333 / this.scale, 0.38, { fun: "transparent", id: 1 }, 23, 12);
+        
+        this.potfx = new Object_trends(this, "./static/img/witch_house/PotFx.png", this.width * 0.33 / this.scale, 0.317,
+            change(61.5), change(39), change(61.5), change(39), this.width * 0.333 / this.scale, 0.35, { fun: "transparent", id: 1 }, 20, 5)
+        
+        this.Objects.push(new Object(this, "./static/img/blank.png", this.width / 2 / this.scale, 0.35,
+            change(50), change(50), change(35), change(50), this.width * 0.5 / this.scale, 1, { fun: "door", id: 0 }));
+        
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
+            change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己
+    }
+
     show() {
         this.$playground.show();
         this.width = this.$playground.width();
@@ -1353,7 +1413,7 @@ class Object_trends extends GameObject {
         this.resize();
         //添加地图物品
 
-        this.create_map0();
+        this.create_map2();
         //this.create_map1();
         // this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, change(33), change(37), 0.2, "me",
         //     change(33) * 0.7, change(37) * 0.9, 7, 7.5));//添加玩家自己

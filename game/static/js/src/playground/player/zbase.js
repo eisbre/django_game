@@ -41,20 +41,20 @@ class Player extends GameObject {
         if (this.role === "me") {
             //渲染人物图像
             this.img = new Image();
-            this.img.src = './static/img/Eilie.png';
+            this.img.src = './static/img/character/Eilie.png';
         }
 
         this.prop1_img = new Image();
-        this.prop1_img.src = './static/img/prop1.png';
+        this.prop1_img.src = './static/img/prop/prop1.png';
 
         this.prop2_img = new Image();
-        this.prop2_img.src = './static/img/prop2.png';
+        this.prop2_img.src = './static/img/prop/prop2.png';
 
         this.prop3_img = new Image();
-        this.prop3_img.src = './static/img/prop3.png';
+        this.prop3_img.src = './static/img/prop/prop3.png';
 
         this.prop4_img = new Image();
-        this.prop4_img.src = './static/img/prop4.png';
+        this.prop4_img.src = './static/img/prop/prop4.png';
 
         this.img_long = new Image();
         this.img_long.src = skill_list_long[`s${this.skill_long_num}`].img;
@@ -153,13 +153,17 @@ class Player extends GameObject {
         // });
 
         this.playground.game_map.$canvas.keydown(function (e) {
-            if (e.which === 70) {
+            if (e.which === 70) {//按F交互
                 if (typeof (outer.action) === "undefined") {
                     return false;
                 }
                 else {
                     if (outer.action.fun.fun === "door") {
                         outer.playground.change_map(outer.action.fun.id);
+                        outer.action = undefined;
+                    }
+                    else if (outer.action.fun.fun === "pot") {
+                        outer.pot();
                         outer.action = undefined;
                     }
                 }
@@ -237,6 +241,10 @@ class Player extends GameObject {
         });
     }
 
+    pot() {//使用pot
+        console.log("pot");
+    }
+
     get_dist(x1, y1, x2, y2) {
         let dx = x1 - x2;
         let dy = y1 - y2;
@@ -301,7 +309,17 @@ class Player extends GameObject {
                         let scale = this.playground.scale;
                         this.ctx.beginPath();
                         this.ctx.fillStyle = "black";
-                        this.ctx.fillText("F", (this.x + 0.02) * scale, (this.y) * scale);
+                        this.ctx.font = "20px serif";
+                        this.ctx.fillText("按F进入", (this.x + 0.02) * scale, (this.y) * scale);
+                    }
+                    else if (obj.fun.fun === "pot") {
+                        // this.playground.change_map(obj.fun.id);
+                        this.action = obj;
+                        let scale = this.playground.scale;
+                        this.ctx.beginPath();
+                        this.ctx.fillStyle = "black";
+                        this.ctx.font = "20px serif";
+                        this.ctx.fillText("按F使用", (this.x + 0.02) * scale, (this.y) * scale);
                     }
                     else {
                         let angle = Math.atan2(this.y - obj.by, this.x - obj.bx);
